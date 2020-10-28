@@ -381,6 +381,13 @@ systemctl enable ntpd
 pacman -S alsa-utils
 ```
 
+- (Optional) Enable networkd and resolved services if no GUI is going to be installed.
+
+```
+systemctl enable systemd-networkd.service
+systemctl enable systemd-resolved.service
+```
+
 ### Install GUI environment
 
 - Xorg display server and xinitrc.
@@ -401,7 +408,7 @@ pacman -S xorg-xset xorg-xprop xorg-xrandr xorg-xclock xdg-utils
 ```
 
 - Video drivers.
- - **vesa** - Driver does not provide acceleration but will work with most hardware. It can be installed as a fallback to other drivers if for whatever reason they fail.
+ - **xf86-video-vesa** - Driver does not provide acceleration but will work with most hardware. It can be installed as a fallback to other drivers if for whatever reason they fail.
  - **xf86-video-intel** - intall for Intel integrated graphics.
  - **xf86-video-nouveau** - intall for NVidia GPUs.
  - **xf86-video-amdgpu** - intall for AMD GPUs from GCN 3 and newer (Radeon Rx 300 or higher).
