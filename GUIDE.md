@@ -146,7 +146,7 @@ mount /dev/sda1 /mnt/efi # /dev/nvme0n1p1
 
 ```
 pacstrap /mnt base base-devel linux linux-firmware util-linux man-db man-pages texinfo openssh sudo \
-         zsh zsh-completions gptfdisk vim iwd usbutils cryptsetup grub efibootmgr btrfs-progs terminus-font \
+         bash-completion gptfdisk vim iwd usbutils cryptsetup grub efibootmgr btrfs-progs terminus-font \
          ttf-dejavu ttf-liberation
 ```
 
@@ -369,9 +369,8 @@ grub-mkconfig -o /boot/grub/grub.cfg
 - Useful services.
 
 ```
-pacman -S acpid acpi lm_sensors ntp dbus cronie
+pacman -S acpi lm_sensors ntp dbus cronie
 
-systemctl enable acpid
 systemctl enable ntpd
 ```
 
@@ -381,14 +380,71 @@ systemctl enable ntpd
 pacman -S alsa-utils
 ```
 
-- (Optional) Enable networkd and resolved services if no GUI is going to be installed.
+### Console only environment
+
+- Install ACPI daemon and enable it.
 
 ```
+pacman -S acpid
+systemctl enable acpid.service
+```
+
+- Enable volume/mic controls. WARNING: Disable volume/mic controls in Xorg to prevent conflicts!
+
+```
+echo "event=button/volumeup" > /etc/acpi/events/vol-up
+echo "action=amixer set Master 5+" >> /etc/acpi/events/vol-up
+
+echo "event=button/volumedown" > /etc/acpi/events/vol-down
+echo "action=amixer set Master 5-" >> /etc/acpi/events/vol-down
+
+echo "event=button/mute" > /etc/acpi/events/vol-mute
+echo "action=amixer set Master toggle" >> /etc/acpi/events/vol-mute
+
+# Not sure if is default for all platforms.
+echo "event=button/f20" > /etc/acpi/events/mic-mute
+echo "action=amixer set Capture toggle" >> /etc/acpi/events/mic-mute
+```
+
+- Set wired and wireless DHCP configurations.
+
+```
+/etc/systemd/network/99-ethernet.network
+----
+[Match]
+Name=en*
+Name=eth*
+
+[Network]
+DHCP=yes
+IPv6PrivacyExtensions=yes
+
+[DHCP]
+RouteMetric=512
+
+/etc/systemd/network/99-wireless.network
+----
+[Match]
+Name=wlp*
+Name=wlan*
+
+[Network]
+DHCP=yes
+IPv6PrivacyExtensions=yes
+
+[DHCP]
+RouteMetric=1024
+```
+
+- Enable iwd, networkd and resolved services.
+
+```
+systemctl enable iwd.service
 systemctl enable systemd-networkd.service
 systemctl enable systemd-resolved.service
 ```
 
-### Install GUI environment
+### GUI environment
 
 - Xorg display server and xinitrc.
 
